@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.routes import (
+from . import (
     auth, products, inventory, customers, 
     orders, analytics, customer_routes, 
     product_images, invoice
