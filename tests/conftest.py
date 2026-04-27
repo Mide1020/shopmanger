@@ -45,21 +45,14 @@ def client():
 
 @pytest.fixture
 def admin_token(client):
-    client.post("/auth/register", json={
+    client.post("/api/v1/auth/register", json={
         "name": "Test Admin",
         "email": "testadmin@shopmanager.com",
-        "password": "admin123"
+        "password": "admin123",
+        "role": "admin"
     })
     
-    db = TestingSessionLocal()
-    from app.models.user import User
-    user = db.query(User).filter(User.email == "testadmin@shopmanager.com").first()
-    user.is_verified = True
-    user.role = "admin"
-    db.commit()
-    db.close()
-
-    response = client.post("/auth/login", json={
+    response = client.post("/api/v1/auth/login", json={
         "email": "testadmin@shopmanager.com",
         "password": "admin123"
     })
@@ -67,20 +60,14 @@ def admin_token(client):
 
 @pytest.fixture
 def customer_token(client):
-    client.post("/auth/register", json={
+    client.post("/api/v1/auth/register", json={
         "name": "Test Customer",
         "email": "testcustomer@shopmanager.com",
-        "password": "customer123"
+        "password": "customer123",
+        "role": "customer"
     })
     
-    db = TestingSessionLocal()
-    from app.models.user import User
-    user = db.query(User).filter(User.email == "testcustomer@shopmanager.com").first()
-    user.is_verified = True
-    db.commit()
-    db.close()
-    
-    response = client.post("/auth/login", json={
+    response = client.post("/api/v1/auth/login", json={
         "email": "testcustomer@shopmanager.com",
         "password": "customer123"
     })

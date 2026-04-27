@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 
 def test_concurrent_orders_no_negative_stock(client, admin_token):
     # --- setup: product with stock=5 ---
-    product_resp = client.post("/products/", json={
+    product_resp = client.post("/api/v1/products/", json={
         "name": "Concurrency Test Product",
         "description": "Race condition test",
         "price": 100,
@@ -23,7 +23,7 @@ def test_concurrent_orders_no_negative_stock(client, admin_token):
     product_id = product_resp.json()["id"]
 
     # --- setup: one customer ---
-    customer_resp = client.post("/customers/", json={
+    customer_resp = client.post("/api/v1/customers/", json={
         "name": "Concurrent Customer",
         "email": "concurrent@test.com",
         "phone": "08099999999",
@@ -37,7 +37,7 @@ def test_concurrent_orders_no_negative_stock(client, admin_token):
     lock = threading.Lock()
 
     def place_order():
-        resp = client.post("/orders/", json={
+        resp = client.post("/api/v1/orders/", json={
             "customer_id": customer_id,
             "items": [{"product_id": product_id, "quantity": 1}],
             "payment_status": "paid"
@@ -60,7 +60,7 @@ def test_concurrent_orders_no_negative_stock(client, admin_token):
     assert len(failures) >= 5, f"Expected at least 5 rejections, got: {failures}"
 
     # Verify stock is never negative via product fetch
-    product_detail = client.get(f"/products/{product_id}")
+    product_detail = client.get(f"/api/v1/products/{product_id}")
     assert product_detail.status_code == 200
     remaining_stock = product_detail.json()["stock"]
     assert remaining_stock >= 0, f"Stock went negative: {remaining_stock}"
