@@ -68,12 +68,14 @@ app.add_exception_handler(Exception, global_exception_handler)
 # Versioned API routes
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
+from datetime import datetime
+
 @app.get("/health")
 def health_check():
     """System health check for monitoring and Docker/K8s"""
     return {
         "status": "healthy",
-        "timestamp": os.popen("date /T").read().strip() if os.name == "nt" else os.popen("date").read().strip(),
+        "timestamp": datetime.now().isoformat(),
         "version": app.version
     }
 
