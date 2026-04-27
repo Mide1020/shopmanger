@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.utils.rate_limit import limiter
-from app.routes import auth, products, inventory, customers, orders, analytics, customer_routes, product_images, invoice
+from app.routes.api_v1 import api_router
 from app.exceptions import (
     validation_exception_handler,
     integrity_error_handler,
@@ -51,10 +51,11 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
-# CORS — update `allow_origins` to your specific frontend URL(s) in production
+# CORS — configure ALLOWED_ORIGINS in your .env for production
+# e.g. ALLOWED_ORIGINS=https://myapp.com,https://admin.myapp.com
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -64,16 +65,18 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(IntegrityError, integrity_error_handler)
 app.add_exception_handler(Exception, global_exception_handler)
 
-app.include_router(auth.router)
-app.include_router(products.router)
-app.include_router(inventory.router)
-app.include_router(customers.router)
-app.include_router(orders.router)
-app.include_router(analytics.router)
-app.include_router(customer_routes.router)
-app.include_router(product_images.router)
-app.include_router(invoice.router)
+# Versioned API routes
+app.include_router(api_router, prefix=settings.API_V1_STR)
+
+@app.get("/health")
+def health_check():
+    """System health check for monitoring and Docker/K8s"""
+    return {
+        "status": "healthy",
+        "timestamp": os.popen("date /T").read().strip() if os.name == "nt" else os.popen("date").read().strip(),
+        "version": app.version
+    }
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to ShopManager API 🚀"}
+    return {"message": "Welcome to ShopManager API", "docs": "/docs", "api_v1": settings.API_V1_STR}

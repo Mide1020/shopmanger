@@ -7,7 +7,7 @@ class Invoice(Base):
     __tablename__ = "invoices"
 
     id = Column(Integer, primary_key=True, index=True)
-    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False, unique=True)
     invoice_number = Column(String, unique=True, nullable=False)
     amount = Column(Float, nullable=False)
     payment_status = Column(String, default="pending")

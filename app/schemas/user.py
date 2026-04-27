@@ -1,12 +1,11 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional
-from pydantic import ConfigDict
 
 class UserCreate(BaseModel):
-    name: str
+    name: str = Field(..., max_length=100)
     email: EmailStr
-    password: str
-    role: Optional[str] = "customer"
+    password: str = Field(..., min_length=8, max_length=128)
+    role: Optional[str] = "customer"  # Optional role for demo/portfolio purposes
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -20,7 +19,9 @@ class UserResponse(BaseModel):
     email: EmailStr
     role: str
     is_active: bool
+    is_verified: bool
 
 class TokenResponse(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str

@@ -15,10 +15,15 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(http_be
             detail="Invalid or expired token"
         )
     user = db.query(User).filter(User.email == payload.get("sub")).first()
-    if not user:
+    if not user or user.deleted_at is not None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        )
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email not verified"
         )
     return user
 

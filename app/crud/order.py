@@ -4,6 +4,7 @@ from app.models.order import Order, OrderItem
 from app.models.product import Product
 from app.schemas.order import OrderCreate, OrderUpdate
 from fastapi import HTTPException
+from datetime import datetime, timezone
 
 def create_order(db: Session, order: OrderCreate):
     total = 0
@@ -46,11 +47,26 @@ def create_order(db: Session, order: OrderCreate):
     db.flush() 
     return new_order
 
-def get_all_orders(db: Session):
-    return db.query(Order).all()
+def get_all_orders(db: Session, page: int = 1, limit: int = 10):
+    query = db.query(Order).filter(Order.deleted_at.is_(None))
+    total = query.count()
+    offset = (page - 1) * limit
+    items = query.offset(offset).limit(limit).all()
+    
+    return {
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "pages": -(-total // limit) if limit > 0 else 0, # ceiling division
+        "items": items,
+    }
+
+def get_orders_by_customer_id(db: Session, customer_id: int):
+    """Fetch only orders belonging to a specific customer — avoids loading all orders."""
+    return db.query(Order).filter(Order.customer_id == customer_id, Order.deleted_at.is_(None)).all()
 
 def get_order_by_id(db: Session, order_id: int):
-    return db.query(Order).filter(Order.id == order_id).first()
+    return db.query(Order).filter(Order.id == order_id, Order.deleted_at.is_(None)).first()
 
 def update_order(db: Session, order_id: int, updated: OrderUpdate):
     order = get_order_by_id(db, order_id)
@@ -63,6 +79,6 @@ def update_order(db: Session, order_id: int, updated: OrderUpdate):
 def delete_order(db: Session, order_id: int):
     order = get_order_by_id(db, order_id)
     if order:
-        db.delete(order)
+        order.deleted_at = datetime.now(timezone.utc)
         db.flush()
     return order

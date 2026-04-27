@@ -11,8 +11,7 @@ def create_invoice(db: Session, order_id: int, amount: float, payment_status: st
         payment_status=payment_status
     )
     db.add(new_invoice)
-    db.commit()
-    db.refresh(new_invoice)
+    db.flush()  # let the service layer own the commit
     return new_invoice
 
 def get_invoice_by_id(db: Session, invoice_id: int):
@@ -28,6 +27,5 @@ def update_invoice_status(db: Session, invoice_id: int, payment_status: str):
     invoice = get_invoice_by_id(db, invoice_id)
     if invoice:
         invoice.payment_status = payment_status
-        db.commit()
-        db.refresh(invoice)
+        db.flush()
     return invoice

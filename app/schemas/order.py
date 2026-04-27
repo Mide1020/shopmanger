@@ -46,4 +46,11 @@ class OrderResponse(BaseModel):
 
 class OrderUpdate(BaseModel):
     payment_status: Optional[str] = None
-    order_status: Optional[str] = None
+    order_status: Optional[str] = None
+
+class PaginatedOrderResponse(BaseModel):
+    total: int
+    page: int
+    limit: int
+    pages: int
+    items: List[OrderResponse]

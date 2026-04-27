@@ -28,6 +28,8 @@ def create_invoice(db: Session, order_id: int):
         amount=order.total,
         payment_status=order.payment_status
     )
+    db.commit()
+    db.refresh(invoice)
     logger.info(f"Invoice created: {invoice.invoice_number}")
     return invoice
 

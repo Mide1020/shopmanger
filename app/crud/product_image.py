@@ -9,7 +9,7 @@ def add_product_image(db: Session, product_id: int, image: ProductImageCreate):
             ProductImage.product_id == product_id,
             ProductImage.is_primary == True
         ).update({"is_primary": False})
-        db.commit()
+        db.flush()
 
     new_image = ProductImage(
         product_id=product_id,
@@ -17,8 +17,7 @@ def add_product_image(db: Session, product_id: int, image: ProductImageCreate):
         is_primary=image.is_primary
     )
     db.add(new_image)
-    db.commit()
-    db.refresh(new_image)
+    db.flush()
     return new_image
 
 def get_product_images(db: Session, product_id: int):
@@ -28,5 +27,5 @@ def delete_product_image(db: Session, image_id: int):
     image = db.query(ProductImage).filter(ProductImage.id == image_id).first()
     if image:
         db.delete(image)
-        db.commit()
+        db.flush()
     return image

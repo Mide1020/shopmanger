@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -6,6 +6,7 @@ from app.schemas.invoice import InvoiceResponse
 from app.utils.dependencies import admin_only, get_current_user
 from app.services import invoice_service
 from typing import List
+import os
 
 router = APIRouter(
     prefix="/invoices",
@@ -29,6 +30,13 @@ def get_invoice(invoice_id: int, db: Session = Depends(get_db), current_user = D
 
 
 @router.get("/{invoice_id}/download")
-def download_invoice(invoice_id: int, db: Session = Depends(get_db), current_user = Depends(admin_only)):
+def download_invoice(
+    invoice_id: int,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user = Depends(admin_only),
+):
     filepath, filename = invoice_service.generate_pdf(db, invoice_id)
-    return FileResponse(filepath, media_type="application/pdf", filename=filename)
+    # Schedule temp file deletion after the response is streamed
+    background_tasks.add_task(os.remove, filepath)
+    return FileResponse(filepath, media_type="application/pdf", filename=filename)

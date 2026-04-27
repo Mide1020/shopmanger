@@ -61,14 +61,10 @@ def get_low_stock(db: Session):
 
 def update_stock(db: Session, product_id: int, quantity: int):
     try:
-        product = crud_product.get_product_by_id(db, product_id)
-        if not product:
+        updated = crud_product.update_stock(db, product_id, quantity)
+        if not updated:
             raise HTTPException(status_code=404, detail="Product not found")
         
-        if product.stock + quantity < 0:
-            raise HTTPException(status_code=400, detail="Stock cannot be negative")
-        
-        updated = crud_product.update_stock(db, product_id, quantity)
         db.commit()
         db.refresh(updated)
         
@@ -76,6 +72,12 @@ def update_stock(db: Session, product_id: int, quantity: int):
             logger.warning(f"Low stock alert! Product: {updated.name} stock: {updated.stock}")
         
         return updated
+    except ValueError as ve:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(ve))
+    except HTTPException:
+        db.rollback()
+        raise
     except Exception as e:
         db.rollback()
         raise e

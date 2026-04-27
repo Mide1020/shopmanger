@@ -9,10 +9,11 @@ logger = get_logger(__name__)
 def create_customer(db: Session, customer: CustomerCreate):
     logger.info(f"Creating customer: {customer.name}")
     try:
-        existing = crud_customer.get_customer_by_email(db, customer.email)
-        if existing:
-            logger.warning(f"Customer already exists with email: {customer.email}")
-            raise HTTPException(status_code=400, detail="Customer with this email already exists")
+        if customer.email is not None:
+            existing = crud_customer.get_customer_by_email(db, customer.email)
+            if existing:
+                logger.warning(f"Customer already exists with email: {customer.email}")
+                raise HTTPException(status_code=400, detail="Customer with this email already exists")
         
         new_customer = crud_customer.create_customer(db, customer)
         db.commit()
@@ -23,9 +24,9 @@ def create_customer(db: Session, customer: CustomerCreate):
         db.rollback()
         raise e
 
-def get_all_customers(db: Session, search: str = None):
-    logger.info(f"Fetching all customers, search: {search}")
-    return crud_customer.get_all_customers(db, search)
+def get_all_customers(db: Session, search: str = None, page: int = 1, limit: int = 10):
+    logger.info(f"Fetching all customers, search: {search}, page: {page}")
+    return crud_customer.get_all_customers(db, search, page, limit)
 
 def get_customer(db: Session, customer_id: int):
     customer = crud_customer.get_customer_by_id(db, customer_id)

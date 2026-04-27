@@ -22,8 +22,8 @@ async def create_product(request: Request, product: ProductCreate, db: Session =
     return result
 
 @router.get("/", response_model=PaginatedProductResponse)
-@cache(expire=60, namespace="products")
 @limiter.limit("60/minute")
+@cache(expire=60, namespace="products")
 def get_products(
     request: Request,
     db: Session = Depends(get_db),
@@ -35,8 +35,8 @@ def get_products(
     return product_service.get_all_products(db, page, limit, search, category)
 
 @router.get("/{product_id}", response_model=ProductResponse)
-@cache(expire=60, namespace="products")
 @limiter.limit("60/minute")
+@cache(expire=60, namespace="products")
 def get_product(request: Request, product_id: int, db: Session = Depends(get_db)):
     return product_service.get_product(db, product_id)
 

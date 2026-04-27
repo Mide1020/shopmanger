@@ -11,5 +11,6 @@ class Customer(Base):
     phone = Column(String, nullable=True)
     address = Column(Text, nullable=True)
     notes = Column(Text, nullable=True)
-    tags = Column(String, nullable=True)
+    tags = Column(String, nullable=True)  # stored as comma-separated; API returns List[str]
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
