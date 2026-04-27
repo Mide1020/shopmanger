@@ -14,7 +14,7 @@ from app.utils.rate_limit import limiter
 limiter.enabled = False
 
 TEST_DATABASE_URL = os.environ.get(
-    "TEST_DATABASE_URL",
+    "DATABASE_URL",
     "postgresql://postgres:1234@localhost:5432/shopmanager_test"
 )
 

@@ -53,4 +53,4 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           TESTING: "1"
         run: |
-          pytest
+          pytest tests/ -v
