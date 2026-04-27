@@ -53,4 +53,5 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           TESTING: "1"
         run: |
-          pytest tests/ -v
+          export PYTHONPATH=$PYTHONPATH:.
+          python -m pytest tests/ -v
