@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, inspect
 
 def fix_alembic():
     db_url = os.getenv("DATABASE_URL")
@@ -16,6 +16,19 @@ def fix_alembic():
             result = conn.execute(text("SELECT version_num FROM alembic_version")).fetchall()
             versions = [r[0] for r in result]
             print(f"Current alembic versions in DB: {versions}")
+            
+            # Check if users table actually has the new columns
+            inspector = inspect(engine)
+            if 'users' in inspector.get_table_names():
+                columns = [col['name'] for col in inspector.get_columns('users')]
+                print(f"Users table columns: {columns}")
+                
+                if 'deleted_at' not in columns:
+                    print("Missing 'deleted_at' column! Resetting alembic_version to force migration b03920682977 to run.")
+                    conn.execute(text("DELETE FROM alembic_version"))
+                    conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('9569a32a391c')"))
+                    conn.commit()
+                    return
             
             if 'b03920682977' in versions and '5f55d59008c3' in versions:
                 print("Found overlapping versions. Removing the older version 'b03920682977'.")
