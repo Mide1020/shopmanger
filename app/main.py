@@ -31,7 +31,13 @@ async def lifespan(app: FastAPI):
     else:
         try:
             # Attempt to connect to Redis
-            redis = aioredis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=False)
+            redis = aioredis.from_url(
+                settings.REDIS_URL, 
+                encoding="utf8", 
+                decode_responses=False,
+                socket_connect_timeout=3,
+                socket_timeout=3
+            )
             await redis.ping()
             FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
             logger.info("Connected to Redis successfully for caching.")
