@@ -40,12 +40,16 @@ async def integrity_error_handler(request: Request, exc: IntegrityError):
         }
     )
 
+import traceback
+
 async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception on {request.url.path}: {exc}", exc_info=True)
+    error_msg = f"Something went wrong on our end: {str(exc)} | Trace: {traceback.format_exc()}"
     return JSONResponse(
         status_code=500,
         content={
             "status": "error",
             "code": ErrorCode.INTERNAL_SERVER_ERROR,
-            "message": "Something went wrong on our end",
+            "message": error_msg,
         }
     )
