@@ -35,4 +35,4 @@ COPY . .
 EXPOSE 8000
 
 # Start server (run migrations first so tables exist on fresh deployments)
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "python scripts/fix_alembic.py && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
